@@ -15,8 +15,10 @@ android {
         applicationId = "pro.udeedit.demo.simplegpstracker"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
+
+        // vc2, 1.1.0 - merging with feature/main-ui-skeleton
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
