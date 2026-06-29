@@ -1,4 +1,4 @@
-package pro.udeedit.demo.simplegpstracker.core.model
+package pro.udeedit.demo.simplegpstracker.core.domain.model
 
 data class TrackingConfig(
     val isTrackingEnabled: Boolean,

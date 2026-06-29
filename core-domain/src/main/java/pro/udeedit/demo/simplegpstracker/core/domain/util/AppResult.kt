@@ -1,4 +1,4 @@
-package pro.udeedit.demo.simplegpstracker.core.util
+package pro.udeedit.demo.simplegpstracker.core.domain.util
 
 sealed class AppResult<out T> {
     data class Success<T>(val value: T) : AppResult<T>()
