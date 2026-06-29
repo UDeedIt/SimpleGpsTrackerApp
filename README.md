@@ -2,19 +2,23 @@
 
 SimpleGpsTracker is a minimal Android app written in Kotlin and Jetpack Compose that periodically records the device’s GPS location and sends it to a configurable server endpoint.
 
-The project is intended as a portfolio‑quality example of modern Android development with a clean architecture and background location tracking.
+The project is intended as a portfolio‑quality example of **modern Android development**, with a clean, layered architecture, modularization, and background location tracking.
 
 ## Tech Stack
 
 - Kotlin
 - Jetpack Compose (Material 3)
 - Coroutines / Flow
-- Hilt for dependency injection
-- AndroidX WorkManager / foreground service for background work (planned)
-- Retrofit + OkHttp for networking (planned)
-- DataStore (Preferences) for configuration (planned)
-- Google Play Services Location for GPS data
-- GitHub Actions for CI
+- Modular architecture:
+    - `app` – Android app, UI, DI wiring
+    - `core-domain` – pure Kotlin domain models, repositories, use cases
+    - `core-data` – DataStore, Ktor client, repository implementations
+- Dependency Injection: Hilt (planned wiring)
+- Networking: Ktor HTTP client + Kotlinx Serialization
+- Persistence: DataStore (Preferences) for configuration (planned)
+- Location: Google Play Services Location (Fused Location Provider)
+- Background work: WorkManager / foreground service for tracking (planned)
+- CI: GitHub Actions (`SimpleGpsTracker – Android CI` workflow)
 
 ## Features (Planned)
 
