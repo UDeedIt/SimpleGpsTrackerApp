@@ -5,9 +5,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pro.udeedit.demo.simplegpstracker.R
 
 @Composable
 fun MainScreen(
@@ -86,6 +88,19 @@ private fun MainScreenContent(
             ) {
                 Text(if (state.isSaving) "Saving..." else "Save")
             }
+        }
+    }
+
+    if (state.lastLatitude != null && state.lastLongitude != null) {
+        Column {
+            Text(text = stringResource(R.string.main_last_location_label))
+            Text(
+                text = stringResource(
+                    R.string.main_last_location_format,
+                    state.lastLatitude,
+                    state.lastLongitude
+                )
+            )
         }
     }
 }

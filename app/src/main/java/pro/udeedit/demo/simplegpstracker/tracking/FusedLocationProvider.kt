@@ -1,4 +1,4 @@
-package pro.udeedit.demo.simplegpstracker.tracking.location
+package pro.udeedit.demo.simplegpstracker.tracking
 
 import android.annotation.SuppressLint
 import android.location.Location
@@ -18,8 +18,7 @@ import javax.inject.Singleton
 /**
  * [LocationProvider] implementation backed by Fused Location Provider.
  *
- * This class assumes that location permissions have already been granted.
- * Permission checks should be handled by the caller (e.g. Activity/Service).
+ * This class assumes that the required location permissions have already been granted.
  */
 @Singleton
 class FusedLocationProvider @Inject constructor(
@@ -33,9 +32,9 @@ class FusedLocationProvider @Inject constructor(
     /**
      * Emits continuous location updates as [LocationPoint] values.
      */
-    @SuppressLint("MissingPermission") // caller must ensure permissions
+    @SuppressLint("MissingPermission") // caller is responsible for permission checks
     override fun observeLocationUpdates(): Flow<LocationPoint> = callbackFlow {
-        val request = LocationRequest.Builder(10_000L) // 10 seconds default
+        val request = LocationRequest.Builder(10_000L)
             .setMinUpdateIntervalMillis(5_000L)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .build()

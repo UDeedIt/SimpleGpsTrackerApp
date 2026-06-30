@@ -8,5 +8,7 @@ data class MainUiState(
     val intervalMinutes: Int = 5,
     val serverUrl: String = "",
     val isSaving: Boolean = false,
-    val lastStatusMessage: String? = null
+    val lastStatusMessage: String? = null,
+    val lastLatitude: Double? = null,
+    val lastLongitude: Double? = null,
 )

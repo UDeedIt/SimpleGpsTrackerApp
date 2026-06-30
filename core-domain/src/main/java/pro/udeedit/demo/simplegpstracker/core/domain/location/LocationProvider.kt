@@ -13,10 +13,10 @@ import pro.udeedit.demo.simplegpstracker.core.domain.model.LocationPoint
 interface LocationProvider {
 
     /**
-     * Returns a cold [Flow] of location samples.
+     * Returns a cold [Flow] of [LocationPoint] values.
      *
-     * The caller is responsible for handling permissions and starting/stopping
-     * collection as appropriate.
+     * The caller is responsible for starting and stopping collection and for
+     * handling runtime permissions.
      */
     fun observeLocationUpdates(): Flow<LocationPoint>
 }

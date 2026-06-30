@@ -3,6 +3,7 @@ package pro.udeedit.demo.simplegpstracker.ui.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.R
 import pro.udeedit.demo.simplegpstracker.core.domain.model.TrackingConfig
 import pro.udeedit.demo.simplegpstracker.core.domain.usecase.GetTrackingConfigUseCase
+import pro.udeedit.demo.simplegpstracker.core.domain.usecase.ObserveLocationUseCase
 import pro.udeedit.demo.simplegpstracker.core.domain.usecase.ObserveTrackingConfigUseCase
 import pro.udeedit.demo.simplegpstracker.core.domain.usecase.UpdateTrackingConfigUseCase
 import pro.udeedit.demo.simplegpstracker.util.StringProvider
@@ -32,9 +34,10 @@ class MainViewModel @Inject constructor(
     private val observeTrackingConfig: ObserveTrackingConfigUseCase,
     private val getTrackingConfig: GetTrackingConfigUseCase,
     private val updateTrackingConfig: UpdateTrackingConfigUseCase,
+    private val observeLocation: ObserveLocationUseCase,
     private val stringProvider: StringProvider,
 
-) : ViewModel() {
+    ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
 
@@ -46,11 +49,14 @@ class MainViewModel @Inject constructor(
      */
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+    private var locationJob: Job? = null
+
+
     init {
-        // Keep the UI in sync with the stored configuration.
         viewModelScope.launch {
             observeTrackingConfig().collectLatest { config ->
                 _uiState.value = config.toUiState()
+                updateLocationObservation(config.isTrackingEnabled)
             }
         }
     }
@@ -62,6 +68,7 @@ class MainViewModel @Inject constructor(
      */
     fun onTrackingToggleChanged(enabled: Boolean) {
         _uiState.value = _uiState.value.copy(isTrackingEnabled = enabled)
+        updateLocationObservation(enabled)
     }
 
     /**
@@ -107,5 +114,23 @@ class MainViewModel @Inject constructor(
      */
     fun onStatusMessageShown() {
         _uiState.value = _uiState.value.copy(lastStatusMessage = null)
+    }
+
+
+    private fun updateLocationObservation(shouldTrack: Boolean) {
+        if (shouldTrack) {
+            if (locationJob?.isActive == true) return
+            locationJob = viewModelScope.launch {
+                observeLocation().collectLatest { point ->
+                    _uiState.value = _uiState.value.copy(
+                        lastLatitude = point.latitude,
+                        lastLongitude = point.longitude
+                    )
+                }
+            }
+        } else {
+            locationJob?.cancel()
+            locationJob = null
+        }
     }
 }
