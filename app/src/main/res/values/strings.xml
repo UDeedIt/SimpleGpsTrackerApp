@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">SimpleGpsTracker</string>
+    <string name="app_name" translatable="false">SimpleGpsTracker</string>
+
+    <!-- Main screen -->
+    <string name="main_title" translatable="false">SimpleGpsTracker</string>
+    <string name="main_settings_saved">Settings saved</string>
+
 </resources>

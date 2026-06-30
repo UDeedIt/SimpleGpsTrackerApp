@@ -1,5 +1,7 @@
 package pro.udeedit.demo.simplegpstracker.core.data.network.dto
 
+import kotlinx.serialization.Serializable
+
 @Serializable
 data class LocationPayload(
     val deviceId: String,

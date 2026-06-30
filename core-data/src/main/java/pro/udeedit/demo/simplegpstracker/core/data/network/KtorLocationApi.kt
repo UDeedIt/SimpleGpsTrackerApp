@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 import pro.udeedit.demo.simplegpstracker.core.data.network.dto.LocationPayload
 
 class KtorLocationApi(
+
     private val client: HttpClient = HttpClient(Android) {
         install(ContentNegotiation) {
             json(
@@ -25,10 +26,12 @@ class KtorLocationApi(
                 }
             )
         }
+
         install(Logging) {
             level = LogLevel.BODY
         }
     }
+
 ) : LocationApi {
 
     override suspend fun sendLocation(
