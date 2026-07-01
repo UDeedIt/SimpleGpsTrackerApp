@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.launch
+import pro.udeedit.demo.simplegpstracker.tracking.startTrackingService
+import pro.udeedit.demo.simplegpstracker.tracking.stopTrackingService
 import pro.udeedit.demo.simplegpstracker.ui.main.MainScreen
 import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
 
@@ -108,13 +110,14 @@ class MainActivity : ComponentActivity() {
                     MainScreen(
                         padding = padding,
                         requestLocationPermission = { onResult ->
-                            // Store callback so we can call it when the permission result arrives.
                             permissionResultCallback = onResult
                             locationPermissionLauncher.launch(
                                 Manifest.permission.ACCESS_FINE_LOCATION
                             )
                         },
-                        snackbarHostState = snackbarHostState
+                        snackbarHostState = snackbarHostState,
+                        onStartTrackingRequested = { startTrackingService() },
+                        onStopTrackingRequested = { stopTrackingService() }
                     )
                 }
             }
@@ -145,12 +148,19 @@ class MainActivity : ComponentActivity() {
  */
 @Preview(showBackground = true)
 @Composable
-fun MainScreenPreview() {
-    SimpleGpsTrackerTheme {
+private fun MainScreenPreview() {
+    // Simple preview using dummy values for dependencies.
+    pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme {
         MainScreen(
             padding = PaddingValues(),
-            requestLocationPermission = {},
-            snackbarHostState = SnackbarHostState()
+            requestLocationPermission = { onResult ->
+                // Simulate permission granted in preview.
+                onResult(true)
+            },
+            snackbarHostState = SnackbarHostState(),
+            onStartTrackingRequested = {},
+            onStopTrackingRequested = {}
         )
     }
 }
+

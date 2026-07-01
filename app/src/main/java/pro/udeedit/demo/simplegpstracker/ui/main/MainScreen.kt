@@ -15,15 +15,21 @@ import pro.udeedit.demo.simplegpstracker.R
 /**
  * Entry composable for the main screen.
  *
- * This function:
- * - Obtains the [MainViewModel] via Hilt.
- * - Collects the [MainUiState] as Compose state.
- * - Delegates actual UI rendering to [MainScreenContent].
+ * Responsibilities:
+ * - Obtain and observe [MainUiState] from [MainViewModel].
+ * - Delegate UI layout to [MainScreenContent].
+ * - Coordinate user actions (e.g. tracking toggle) with:
+ *   - Runtime permission requests,
+ *   - Foreground tracking service start/stop callbacks.
  *
  * @param padding Padding from the parent [Scaffold] in [MainActivity].
- * @param requestLocationPermission Callback that triggers a runtime location
- * permission request from the Activity and reports the result via [onResult].
- * @param snackbarHostState [SnackbarHostState] for showing transient messages.
+ * @param requestLocationPermission Callback that requests location permission
+ * and reports the result via [onResult].
+ * @param snackbarHostState [SnackbarHostState] used for transient messages.
+ * @param onStartTrackingRequested Called when tracking should be started
+ * (e.g. to start the foreground service).
+ * @param onStopTrackingRequested Called when tracking should be stopped
+ * (e.g. to stop the foreground service).
  * @param viewModel Hilt-injected [MainViewModel] that owns the screen state.
  */
 @Composable
@@ -31,6 +37,8 @@ fun MainScreen(
     padding: PaddingValues,
     requestLocationPermission: (onResult: (Boolean) -> Unit) -> Unit,
     snackbarHostState: SnackbarHostState,
+    onStartTrackingRequested: () -> Unit,
+    onStopTrackingRequested: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     // Collect the latest UI state from the ViewModel, respecting lifecycle.
@@ -40,16 +48,22 @@ fun MainScreen(
         state = uiState,
         padding = padding,
         onTrackingToggleChanged = { enabled ->
-            // When user enables tracking, request permission first.
             if (enabled) {
                 requestLocationPermission { granted ->
-                    // Only enable tracking in the ViewModel if permission was granted.
-                    viewModel.onTrackingToggleChanged(granted)
+                    // Only enable tracking and start service if permission was granted.
+                    if (granted) {
+                        viewModel.onTrackingToggleChanged(true)
+                        onStartTrackingRequested()
+
+                    } else {
+                        viewModel.onTrackingToggleChanged(false)
+                        onStopTrackingRequested()
+                    }
                 }
 
             } else {
-                // When disabling, we can update directly.
                 viewModel.onTrackingToggleChanged(false)
+                onStopTrackingRequested()
             }
         },
         onIntervalChanged = viewModel::onIntervalChanged,
