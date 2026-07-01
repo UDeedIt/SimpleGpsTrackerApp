@@ -1,7 +1,10 @@
 package pro.udeedit.demo.simplegpstracker
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -20,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.ui.main.MainScreen
 import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
@@ -58,24 +62,43 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf<((Boolean) -> Unit)?>(null)
                 }
 
-                // Launcher used to request fine location permission at runtime.
-                // On result:
-                // - If granted, notify the callback with true.
-                // - If denied, notify with false and show a Snackbar.
                 val locationPermissionLauncher =
                     rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission()
-                    ) { granted ->
+                    ) { granted: Boolean ->
+                        // Notify the screen/ViewModel about the result first.
                         permissionResultCallback?.invoke(granted)
 
                         if (!granted) {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = getString(R.string.main_location_permission_required)
+                            // Check whether we should show rationale. If not, this usually means
+                            // the user selected "Don't ask again" -> permanent denial.
+                            val shouldShowRationale =
+                                ActivityCompat.shouldShowRequestPermissionRationale(
+                                    this,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
                                 )
+
+                            coroutineScope.launch {
+                                if (!shouldShowRationale) {
+                                    // Permanent denial: inform the user and open app settings.
+                                    snackbarHostState.showSnackbar(
+                                        message = getString(
+                                            R.string.main_location_permission_permanently_denied
+                                        )
+                                    )
+
+                                    openAppSettings()
+
+                                } else {
+                                    // Simple denial: inform that permission is required.
+                                    snackbarHostState.showSnackbar(
+                                        message = getString(R.string.main_location_permission_required)
+                                    )
+                                }
                             }
                         }
                     }
+
 
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -97,6 +120,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    /**
+     * Opens the application details settings screen so the user can manually
+     * grant the location permission after a permanent denial.
+     */
+    private fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", packageName, null)
+        )
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+
 }
 
 // PREVIEW

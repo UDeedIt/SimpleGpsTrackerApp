@@ -25,5 +25,8 @@
         SimpleGpsTracker отслеживает ваше местоположение.
     </string>
 
+    <string name="main_location_permission_permanently_denied">
+        Разрешение на доступ к местоположению было навсегда отклонено. Включите его в настройках приложения.
+    </string>
 
 </resources>

@@ -25,4 +25,9 @@
         SimpleGpsTracker verfolgt derzeit Ihren Standort.
     </string>
 
+    <string name="main_location_permission_permanently_denied">
+        Die Standortberechtigung wurde dauerhaft verweigert. Bitte aktivieren Sie sie in den App-Einstellungen.
+    </string>
+
+
 </resources>

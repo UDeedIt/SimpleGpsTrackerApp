@@ -26,5 +26,8 @@
     <string name="tracking_notification_title">Location tracking active</string>
     <string name="tracking_notification_text">SimpleGpsTracker is tracking your location.</string>
 
+    <string name="main_location_permission_permanently_denied">
+        Location permission is permanently denied. Please enable it in app settings.
+    </string>
 
 </resources>

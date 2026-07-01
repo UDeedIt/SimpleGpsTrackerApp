@@ -25,4 +25,8 @@
         SimpleGpsTracker-ը հետեւում է ձեր գտնվելու վայրին:
     </string>
 
+    <string name="main_location_permission_permanently_denied">
+        Գտնվելու վայրի թույլտվությունը մերժվել է մշտապես։ Խնդրում ենք միացնել այն հավելվածի կարգավորումներում։
+    </string>
+
 </resources>
