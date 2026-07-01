@@ -8,7 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import pro.udeedit.demo.simplegpstracker.core.domain.location.LocationProvider
 import pro.udeedit.demo.simplegpstracker.core.domain.usecase.ObserveLocationUseCase
-import pro.udeedit.demo.simplegpstracker.tracking.location.FusedLocationProvider
+import pro.udeedit.demo.simplegpstracker.tracking.FusedLocationProvider
 import javax.inject.Singleton
 
 /**
