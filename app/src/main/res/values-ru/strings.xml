@@ -20,4 +20,10 @@
         Показывает уведомление, пока отслеживание местоположения активно.
     </string>
 
+    <string name="tracking_notification_title">Отслеживание местоположения активно</string>
+    <string name="tracking_notification_text">
+        SimpleGpsTracker отслеживает ваше местоположение.
+    </string>
+
+
 </resources>

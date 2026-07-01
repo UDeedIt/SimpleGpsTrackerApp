@@ -21,8 +21,8 @@
     <string name="tracking_notification_channel_id" translatable="false">tracking_channel</string>
     <string name="tracking_notification_channel_name">Location tracking</string>
     <string name="tracking_notification_channel_description">
-    Shows a notification while location tracking is active.
-</string>
+        Shows a notification while location tracking is active.
+    </string>
     <string name="tracking_notification_title">Location tracking active</string>
     <string name="tracking_notification_text">SimpleGpsTracker is tracking your location.</string>
 

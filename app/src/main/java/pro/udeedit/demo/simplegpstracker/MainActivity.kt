@@ -16,7 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.ui.main.MainScreen
 import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
@@ -48,15 +51,23 @@ class MainActivity : ComponentActivity() {
             SimpleGpsTrackerTheme {
                 // Shared host for Snackbars displayed from the main screen.
                 val snackbarHostState = remember { SnackbarHostState() }
-
-                // scope for launching coroutines from Composables
                 val coroutineScope = rememberCoroutineScope()
 
-                // handle "granted" and show Snackbar when denied
+                // Holds the callback that MainScreen provides when it requests permission.
+                var permissionResultCallback by remember {
+                    mutableStateOf<((Boolean) -> Unit)?>(null)
+                }
+
+                // Launcher used to request fine location permission at runtime.
+                // On result:
+                // - If granted, notify the callback with true.
+                // - If denied, notify with false and show a Snackbar.
                 val locationPermissionLauncher =
                     rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission()
                     ) { granted ->
+                        permissionResultCallback?.invoke(granted)
+
                         if (!granted) {
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar(
@@ -66,8 +77,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                // Top-level scaffold hosting the main screen and a SnackbarHost
-                // for user-visible messages.
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     modifier = Modifier
@@ -75,7 +84,9 @@ class MainActivity : ComponentActivity() {
 
                     MainScreen(
                         padding = padding,
-                        requestLocationPermission = {
+                        requestLocationPermission = { onResult ->
+                            // Store callback so we can call it when the permission result arrives.
+                            permissionResultCallback = onResult
                             locationPermissionLauncher.launch(
                                 Manifest.permission.ACCESS_FINE_LOCATION
                             )

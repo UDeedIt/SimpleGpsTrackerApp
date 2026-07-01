@@ -22,14 +22,14 @@ import pro.udeedit.demo.simplegpstracker.R
  *
  * @param padding Padding from the parent [Scaffold] in [MainActivity].
  * @param requestLocationPermission Callback that triggers a runtime location
- * permission request from the Activity.
+ * permission request from the Activity and reports the result via [onResult].
  * @param snackbarHostState [SnackbarHostState] for showing transient messages.
  * @param viewModel Hilt-injected [MainViewModel] that owns the screen state.
  */
 @Composable
 fun MainScreen(
     padding: PaddingValues,
-    requestLocationPermission: () -> Unit,
+    requestLocationPermission: (onResult: (Boolean) -> Unit) -> Unit,
     snackbarHostState: SnackbarHostState,
     viewModel: MainViewModel = hiltViewModel()
 ) {
@@ -40,11 +40,17 @@ fun MainScreen(
         state = uiState,
         padding = padding,
         onTrackingToggleChanged = { enabled ->
-            // When user enables tracking, ask for location permission first.
+            // When user enables tracking, request permission first.
             if (enabled) {
-                requestLocationPermission()
+                requestLocationPermission { granted ->
+                    // Only enable tracking in the ViewModel if permission was granted.
+                    viewModel.onTrackingToggleChanged(granted)
+                }
+
+            } else {
+                // When disabling, we can update directly.
+                viewModel.onTrackingToggleChanged(false)
             }
-            viewModel.onTrackingToggleChanged(enabled)
         },
         onIntervalChanged = viewModel::onIntervalChanged,
         onServerUrlChanged = viewModel::onServerUrlChanged,

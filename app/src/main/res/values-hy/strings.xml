@@ -20,4 +20,9 @@
         Ցույց է տալիս ծանուցում, երբ գտնվողության հետեւումը ակտիվ է:
     </string>
 
+    <string name="tracking_notification_title">Գտնվելու վայրի հետեւումը ակտիվ է</string>
+    <string name="tracking_notification_text">
+        SimpleGpsTracker-ը հետեւում է ձեր գտնվելու վայրին:
+    </string>
+
 </resources>
