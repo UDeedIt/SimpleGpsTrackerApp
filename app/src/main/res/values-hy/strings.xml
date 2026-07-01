@@ -5,4 +5,14 @@
     <string name="main_last_location_label">Վերջին գտնվելու վայրը՝</string>
     <string name="main_last_location_format">%1$.5f, %2$.5f</string>
 
+    <string name="main_location_permission_required">
+        Հետեվելու համար անհրաժեշտ է տեղադրության թույլտվություն։
+    </string>
+
+    <string name="main_tracking_label">Հետեվում</string>
+    <string name="main_interval_label">Միջակայք (րոպե)</string>
+    <string name="main_server_url_label">Սերվերի URL</string>
+    <string name="main_save">Պահպանել</string>
+    <string name="main_saving">Պահպանվում է…</string>
+
 </resources>

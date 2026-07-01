@@ -29,6 +29,11 @@
 
         </activity>
 
+        <service
+            android:name=".tracking.TrackingForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
     </application>
 
 </manifest>
