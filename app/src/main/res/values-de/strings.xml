@@ -15,4 +15,9 @@
     <string name="main_save">Speichern</string>
     <string name="main_saving">Speichervorgang…</string>
 
+    <string name="tracking_notification_channel_name">Standort-Tracking</string>
+    <string name="tracking_notification_channel_description">
+        Zeigt eine Benachrichtigung an, während das Standort-Tracking aktiv ist.
+    </string>
+
 </resources>

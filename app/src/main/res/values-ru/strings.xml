@@ -15,4 +15,9 @@
     <string name="main_save">Сохранить</string>
     <string name="main_saving">Сохранение…</string>
 
+    <string name="tracking_notification_channel_name">Отслеживание местоположения</string>
+    <string name="tracking_notification_channel_description">
+        Показывает уведомление, пока отслеживание местоположения активно.
+    </string>
+
 </resources>

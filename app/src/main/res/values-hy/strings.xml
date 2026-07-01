@@ -15,4 +15,9 @@
     <string name="main_save">Պահպանել</string>
     <string name="main_saving">Պահպանվում է…</string>
 
+    <string name="tracking_notification_channel_name">Գործողության հետեւում</string>
+    <string name="tracking_notification_channel_description">
+        Ցույց է տալիս ծանուցում, երբ գտնվողության հետեւումը ակտիվ է:
+    </string>
+
 </resources>
