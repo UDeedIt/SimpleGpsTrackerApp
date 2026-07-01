@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp) // Recommended over kapt for modern projects
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -94,4 +95,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(project(":core-domain"))
+    implementation(project(":core-data"))
 }

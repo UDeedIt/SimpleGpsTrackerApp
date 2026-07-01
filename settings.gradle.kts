@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "SimpleGpsTracker"
 include(":app")
+include(":core-domain")
+include(":core-data")
