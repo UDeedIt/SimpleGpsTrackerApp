@@ -2,7 +2,9 @@ package pro.udeedit.demo.simplegpstracker
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -10,20 +12,21 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.tracking.startTrackingService
 import pro.udeedit.demo.simplegpstracker.tracking.stopTrackingService
@@ -37,17 +40,16 @@ import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
  * - Configure window (edge-to-edge).
  * - Set the root Compose content and theme.
  * - Provide a [SnackbarHostState] for transient messages.
- * - Expose a launcher for requesting location permission at runtime and
- *   pass it down to the composable layer.
+ * - Expose launchers for requesting runtime permissions (location, notifications)
+ *   and pass them down to the composable layer.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-
     /**
      * Called when the activity is starting.
      *
-     * Sets up the Compose hierarchy and prepares the permission launcher and
+     * Sets up the Compose hierarchy and prepares the permission launchers and
      * snackbar host state that the UI will use.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,10 +67,24 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf<((Boolean) -> Unit)?>(null)
                 }
 
+                // Launcher for Android 13+ POST_NOTIFICATIONS permission.
+                val notificationsPermissionLauncher =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.RequestPermission()
+                        ) {
+                            // TODO: React to notification permission result if needed
+                            // e.g. show a Snackbar when notifications are denied.
+                        }
+
+                    } else {
+                        null
+                    }
+
+                // Launcher for fine location permission.
                 val locationPermissionLauncher =
                     rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission()
-
                     ) { granted: Boolean ->
 
                         // Notify the screen/ViewModel about the result first.
@@ -91,9 +107,7 @@ class MainActivity : ComponentActivity() {
                                             R.string.main_location_permission_permanently_denied
                                         )
                                     )
-
                                     openAppSettings()
-
                                 } else {
                                     // Simple denial: inform that permission is required.
                                     snackbarHostState.showSnackbar(
@@ -104,19 +118,36 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-
+                // Top-level scaffold hosting the main screen and a SnackbarHost
+                // for user-visible messages.
                 Scaffold(
                     snackbarHost = {
                         SnackbarHost(hostState = snackbarHostState)
                     },
                     modifier = Modifier
-
                 ) { padding ->
 
                     MainScreen(
                         padding = padding,
                         requestLocationPermission = { onResult ->
+                            // Store callback so we can call it when the location permission result arrives.
                             permissionResultCallback = onResult
+
+                            // On Android 13+ ensure we have POST_NOTIFICATIONS for the foreground service notification.
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                val hasNotificationPermission = ContextCompat.checkSelfPermission(
+                                    this,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+
+                                if (!hasNotificationPermission) {
+                                    notificationsPermissionLauncher?.launch(
+                                        Manifest.permission.POST_NOTIFICATIONS
+                                    )
+                                }
+                            }
+
+                            // Always request location permission as before.
                             locationPermissionLauncher.launch(
                                 Manifest.permission.ACCESS_FINE_LOCATION
                             )
@@ -142,7 +173,6 @@ class MainActivity : ComponentActivity() {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     }
-
 }
 
 // PREVIEW
@@ -155,8 +185,7 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 private fun MainScreenPreview() {
-    // Simple preview using dummy values for dependencies.
-    pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme {
+    SimpleGpsTrackerTheme {
         MainScreen(
             padding = PaddingValues(),
             requestLocationPermission = { onResult ->
@@ -169,4 +198,3 @@ private fun MainScreenPreview() {
         )
     }
 }
-
