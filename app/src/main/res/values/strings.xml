@@ -14,6 +14,8 @@
     <string name="main_tracking_label">Tracking</string>
     <string name="main_interval_label">Interval (minutes)</string>
     <string name="main_server_url_label">Server URL</string>
+    <string name="main_user_name_label">User name</string>
+
     <string name="main_save">Save</string>
     <string name="main_saving">Saving...</string>
 

@@ -43,6 +43,7 @@ import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+
     /**
      * Called when the activity is starting.
      *
@@ -67,7 +68,9 @@ class MainActivity : ComponentActivity() {
                 val locationPermissionLauncher =
                     rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission()
+
                     ) { granted: Boolean ->
+
                         // Notify the screen/ViewModel about the result first.
                         permissionResultCallback?.invoke(granted)
 
@@ -103,8 +106,11 @@ class MainActivity : ComponentActivity() {
 
 
                 Scaffold(
-                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState)
+                    },
                     modifier = Modifier
+
                 ) { padding ->
 
                     MainScreen(

@@ -10,7 +10,7 @@ import javax.inject.Inject
  * don't depend directly on Android framework APIs.
  */
 class StringProvider @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
 
     fun get(@StringRes resId: Int): String = context.getString(resId)

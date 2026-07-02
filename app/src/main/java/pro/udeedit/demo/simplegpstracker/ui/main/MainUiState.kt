@@ -9,6 +9,9 @@ data class MainUiState(
     val serverUrl: String = "",
     val isSaving: Boolean = false,
     val lastStatusMessage: String? = null,
+
     val lastLatitude: Double? = null,
     val lastLongitude: Double? = null,
+
+    val userName: String = ""
 )

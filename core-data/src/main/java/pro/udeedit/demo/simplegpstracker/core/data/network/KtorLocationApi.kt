@@ -15,6 +15,14 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import pro.udeedit.demo.simplegpstracker.core.data.network.dto.LocationPayload
 
+/**
+ * [LocationApi] implementation backed by the Ktor HTTP client.
+ *
+ * Uses:
+ * - Android engine
+ * - Kotlinx Serialization for JSON
+ * - Ktor Logging plugin for request/response logging
+ */
 class KtorLocationApi(
 
     private val client: HttpClient = HttpClient(Android) {
@@ -34,6 +42,12 @@ class KtorLocationApi(
 
 ) : LocationApi {
 
+    /**
+     * Sends a [LocationPayload] as JSON via HTTP POST to [serverUrl].
+     *
+     * If [apiToken] is not null, it is added as a bearer token in the
+     * `Authorization` header.
+     */
     override suspend fun sendLocation(
         serverUrl: String,
         apiToken: String?,

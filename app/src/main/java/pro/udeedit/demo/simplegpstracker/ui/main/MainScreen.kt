@@ -6,10 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pro.udeedit.demo.simplegpstracker.MainActivity
 import pro.udeedit.demo.simplegpstracker.R
 
 /**
@@ -24,7 +26,7 @@ import pro.udeedit.demo.simplegpstracker.R
  *
  * @param padding Padding from the parent [Scaffold] in [MainActivity].
  * @param requestLocationPermission Callback that requests location permission
- * and reports the result via [onResult].
+ * and reports the result via `onResult`.
  * @param snackbarHostState [SnackbarHostState] used for transient messages.
  * @param onStartTrackingRequested Called when tracking should be started
  * (e.g. to start the foreground service).
@@ -66,6 +68,7 @@ fun MainScreen(
                 onStopTrackingRequested()
             }
         },
+        onUserNameChanged = viewModel::onUserNameChanged,
         onIntervalChanged = viewModel::onIntervalChanged,
         onServerUrlChanged = viewModel::onServerUrlChanged,
         onSaveClicked = viewModel::onSaveClicked
@@ -78,6 +81,7 @@ private fun MainScreenContent(
     state: MainUiState,
     padding: PaddingValues,
     onTrackingToggleChanged: (Boolean) -> Unit,
+    onUserNameChanged: (String) -> Unit,
     onIntervalChanged: (Int) -> Unit,
     onServerUrlChanged: (String) -> Unit,
     onSaveClicked: () -> Unit
@@ -86,7 +90,7 @@ private fun MainScreenContent(
      * Top-level scaffold for the main screen.
      *
      * - Hosts a top app bar with the title.
-     * - Provides [innerPadding] to content, which we combine with external [padding]
+     * - Provides `innerPadding` to content, which we combine with external `padding`
      *   from the parent scaffold (in [MainActivity]) and our own fixed content padding.
      */
     Scaffold(
@@ -103,19 +107,19 @@ private fun MainScreenContent(
                 // Additional padding passed down from the parent Scaffold
                 .padding(padding)
                 // Fixed content padding for this screen
-                .padding(16.dp)
+                .padding(dimensionResource(R.dimen.main_screen_padding))
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.main_screen_item_spacing))
         ) {
 
             /**
              * Tracking toggle row:
              * - Label describing the setting.
-             * - [Switch] bound to [state.isTrackingEnabled].
+             * - [Switch] bound to `state.isTrackingEnabled`.
              */
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.main_screen_row_spacing))
             ) {
                 Text(stringResource(R.string.main_tracking_label))
                 Switch(
@@ -124,9 +128,19 @@ private fun MainScreenContent(
                 )
             }
 
+            // User name
+            OutlinedTextField(
+                value = state.userName,
+                onValueChange = onUserNameChanged,
+                label = { Text(stringResource(R.string.main_user_name_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+
             /**
              * Interval input:
-             * - Backed by [state.intervalMinutes].
+             * - Backed by `state.intervalMinutes`.
              * - Parses user input to Int; invalid values are ignored.
              */
             OutlinedTextField(
@@ -141,7 +155,7 @@ private fun MainScreenContent(
 
             /**
              * Server URL input:
-             * - Backed by [state.serverUrl].
+             * - Backed by `state.serverUrl`.
              * - Used to configure the endpoint for sending location data.
              */
             OutlinedTextField(
@@ -154,9 +168,9 @@ private fun MainScreenContent(
 
             /**
              * Save button:
-             * - Disabled while [state.isSaving] is true.
+             * - Disabled while `state.isSaving` is true.
              * - Triggers [onSaveClicked] to persist the configuration.
-             * - Shows "Saving..." vs "Save" based on [state.isSaving].
+             * - Shows "Saving..." vs "Save" based on `state.isSaving`.
              */
             Button(
                 onClick = onSaveClicked,

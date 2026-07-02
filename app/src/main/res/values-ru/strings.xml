@@ -12,6 +12,8 @@
     <string name="main_tracking_label">Отслеживание</string>
     <string name="main_interval_label">Интервал (минуты)</string>
     <string name="main_server_url_label">URL сервера</string>
+    <string name="main_user_name_label">Имя пользователя</string>
+
     <string name="main_save">Сохранить</string>
     <string name="main_saving">Сохранение…</string>
 

@@ -30,6 +30,8 @@ class TrackingConfigDataStore(
         val INTERVAL_MINUTES   = intPreferencesKey("interval_minutes")
         val SERVER_URL         = stringPreferencesKey("server_url")
         val API_TOKEN          = stringPreferencesKey("api_token")
+        val USER_ID            = stringPreferencesKey("user_id")
+        val USER_NAME          = stringPreferencesKey("user_name")
     }
 
     /**
@@ -40,9 +42,12 @@ class TrackingConfigDataStore(
             isTrackingEnabled = prefs[Keys.IS_TRACKING_ENABLED] ?: false,
             intervalMinutes   = prefs[Keys.INTERVAL_MINUTES] ?: 5,
             serverUrl         = prefs[Keys.SERVER_URL] ?: "",
-            apiToken          = prefs[Keys.API_TOKEN]
+            apiToken          = prefs[Keys.API_TOKEN],
+            userId            = prefs[Keys.USER_ID],
+            userName          = prefs[Keys.USER_NAME]
         )
     }
+
 
     /**
      * Persists the given [TrackingConfigDto] to DataStore.
@@ -52,10 +57,23 @@ class TrackingConfigDataStore(
             prefs[Keys.IS_TRACKING_ENABLED] = dto.isTrackingEnabled
             prefs[Keys.INTERVAL_MINUTES]   = dto.intervalMinutes
             prefs[Keys.SERVER_URL]         = dto.serverUrl
+
             if (dto.apiToken != null) {
                 prefs[Keys.API_TOKEN] = dto.apiToken
             } else {
                 prefs.remove(Keys.API_TOKEN)
+            }
+
+            if (dto.userId != null) {
+                prefs[Keys.USER_ID] = dto.userId
+            } else {
+                prefs.remove(Keys.USER_ID)
+            }
+
+            if (dto.userName != null) {
+                prefs[Keys.USER_NAME] = dto.userName
+            } else {
+                prefs.remove(Keys.USER_NAME)
             }
         }
     }

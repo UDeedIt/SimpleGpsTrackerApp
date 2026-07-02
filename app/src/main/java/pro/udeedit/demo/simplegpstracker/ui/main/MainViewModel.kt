@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,12 +33,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val observeTrackingConfig: ObserveTrackingConfigUseCase,
-    private val getTrackingConfig: GetTrackingConfigUseCase,
     private val updateTrackingConfig: UpdateTrackingConfigUseCase,
     private val observeLocation: ObserveLocationUseCase,
     private val stringProvider: StringProvider,
 
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
 
@@ -51,12 +51,14 @@ class MainViewModel @Inject constructor(
 
     private var locationJob: Job? = null
 
+    private var lastDomainConfig: TrackingConfig? = null
+
 
     init {
         viewModelScope.launch {
             observeTrackingConfig().collectLatest { config ->
+                lastDomainConfig = config
                 _uiState.value = config.toUiState()
-                updateLocationObservation(config.isTrackingEnabled)
             }
         }
     }
@@ -64,7 +66,7 @@ class MainViewModel @Inject constructor(
     /**
      * Handles user toggling tracking on or off via the UI.
      *
-     * Currently updates only the local UI state.
+     * Currently, updates only the local UI state.
      */
     fun onTrackingToggleChanged(enabled: Boolean) {
         _uiState.value = _uiState.value.copy(isTrackingEnabled = enabled)
@@ -97,7 +99,8 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
 
-            val config = _uiState.value.toTrackingConfig()
+            val existingUserId = lastDomainConfig?.userId
+            val config = _uiState.value.toTrackingConfig(existingUserId)
             updateTrackingConfig(config)
 
             _uiState.value = _uiState.value.copy(
@@ -107,19 +110,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
-    /**
-     * Clears the transient status message after it has been shown by the UI
-     * (e.g. in a Snackbar).
-     */
-    fun onStatusMessageShown() {
-        _uiState.value = _uiState.value.copy(lastStatusMessage = null)
+    /** Handles user editing the user name field. */
+    fun onUserNameChanged(name: String) {
+        _uiState.value = _uiState.value.copy(userName = name)
     }
 
 
+    /**
+     * Starts or stops collection of location updates based on [shouldTrack].
+     *
+     * When tracking is enabled, a coroutine in [viewModelScope] collects the
+     * location [Flow] and updates [MainUiState.lastLatitude] and
+     * [MainUiState.lastLongitude]. When disabled, the active collection job
+     * (if any) is canceled.
+     */
     private fun updateLocationObservation(shouldTrack: Boolean) {
         if (shouldTrack) {
             if (locationJob?.isActive == true) return
+
             locationJob = viewModelScope.launch {
                 observeLocation().collectLatest { point ->
                     _uiState.value = _uiState.value.copy(
@@ -128,6 +136,7 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
+
         } else {
             locationJob?.cancel()
             locationJob = null
