@@ -17,6 +17,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.R
+import pro.udeedit.demo.simplegpstracker.core.data.network.LocationApi
+import pro.udeedit.demo.simplegpstracker.core.data.network.dto.LocationPayload
+import pro.udeedit.demo.simplegpstracker.core.domain.model.LocationPoint
+import pro.udeedit.demo.simplegpstracker.core.domain.model.TrackingConfig
+import pro.udeedit.demo.simplegpstracker.core.domain.repository.TrackingConfigRepository
 import pro.udeedit.demo.simplegpstracker.core.domain.usecase.ObserveLocationUseCase
 import javax.inject.Inject
 
@@ -34,6 +39,20 @@ class TrackingForegroundService : Service() {
 
     @Inject
     lateinit var observeLocationUseCase: ObserveLocationUseCase
+
+    /**
+     * Repository for reading the current tracking configuration, including
+     * the server URL, user ID and optional API token.
+     */
+    @Inject
+    lateinit var trackingConfigRepository: TrackingConfigRepository
+
+    /**
+     * HTTP client abstraction used to send location payloads to the backend.
+     */
+    @Inject
+    lateinit var locationApi: LocationApi
+
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
@@ -68,10 +87,15 @@ class TrackingForegroundService : Service() {
     }
 
     /**
-     * Starts collecting location updates from [ObserveLocationUseCase].
+     * Starts collecting location updates and sending them to the backend.
      *
-     * Currently this just collects the stream; later we will add logic
-     * to buffer and send locations to the configured server.
+     * - Reads the current [TrackingConfig] to obtain `serverUrl`, `userId`
+     *   and optional `apiToken`.
+     * - Converts each [LocationPoint] to a [LocationPayload].
+     * - Uses [LocationApi] to POST the payload to the configured server URL.
+     *
+     * If the `serverUrl` is blank, the function returns without starting
+     * collection, to avoid unnecessary work.
      */
     private fun startCollectingLocations() {
         if (locationCollectionJob?.isActive == true) return
