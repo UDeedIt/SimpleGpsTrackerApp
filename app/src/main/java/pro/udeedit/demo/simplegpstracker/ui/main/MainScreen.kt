@@ -3,7 +3,11 @@ package pro.udeedit.demo.simplegpstracker.ui.main
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -45,6 +49,25 @@ fun MainScreen(
 ) {
     // Collect the latest UI state from the ViewModel, respecting lifecycle.
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Tracks whether we already auto-started tracking for this session,
+    // to avoid starting the service multiple times on recomposition.
+    var autoStartedTracking by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isTrackingEnabled) {
+        // If tracking is enabled in the saved config and we haven't auto-started yet,
+        // start the foreground tracking service once.
+        if (uiState.isTrackingEnabled && !autoStartedTracking) {
+            onStartTrackingRequested()
+            autoStartedTracking = true
+        }
+
+        // If user turns tracking off, reset the flag so it can auto-start again
+        // next time the setting is enabled from a cold start.
+        if (!uiState.isTrackingEnabled) {
+            autoStartedTracking = false
+        }
+    }
 
     MainScreenContent(
         state = uiState,
@@ -128,6 +151,16 @@ private fun MainScreenContent(
                 )
             }
 
+            // Tracking status text shown under the switch to clarify current setting.
+            Text(
+                text = if (state.isTrackingEnabled) {
+                    stringResource(R.string.main_tracking_status_on)
+                } else {
+                    stringResource(R.string.main_tracking_status_off)
+                },
+                style = MaterialTheme.typography.bodySmall
+            )
+
             // User name
             OutlinedTextField(
                 value = state.userName,
@@ -193,7 +226,9 @@ private fun MainScreenContent(
              */
             if (state.lastLatitude != null && state.lastLongitude != null) {
                 Column {
-                    Text(text = stringResource(R.string.main_last_location_label))
+                    val timeText = state.lastTimestampMillis?.let { formatTimestamp(it) } ?: "—"
+                    Text(text = stringResource(R.string.main_last_location_label, timeText))
+//                    Text(text = stringResource(R.string.main_last_location_label))
                     Text(
                         text = stringResource(
                             R.string.main_last_location_format,
@@ -205,4 +240,17 @@ private fun MainScreenContent(
             }
         }
     }
+}
+
+
+/**
+ * Formats an epoch-millis timestamp to “yyyy-MM-dd HH:mm:ss” in the
+ * device’s default locale/time-zone.
+ */
+@Composable
+private fun formatTimestamp(millis: Long): String {
+    val formatter = remember {
+        java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+    }
+    return formatter.format(java.util.Date(millis))
 }

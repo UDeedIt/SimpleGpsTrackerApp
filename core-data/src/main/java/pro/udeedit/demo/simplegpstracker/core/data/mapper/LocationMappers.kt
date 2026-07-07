@@ -18,6 +18,7 @@ object LocationMappers
 fun LocationPoint.toPayload(config: TrackingConfig): LocationPayload =
     LocationPayload(
         deviceId = config.userId,
+        userName = config.userName,
         latitude = latitude,
         longitude = longitude,
         accuracyMeters = accuracyMeters,

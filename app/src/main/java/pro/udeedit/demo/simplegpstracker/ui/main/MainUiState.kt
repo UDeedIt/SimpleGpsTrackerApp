@@ -12,6 +12,8 @@ data class MainUiState(
 
     val lastLatitude: Double? = null,
     val lastLongitude: Double? = null,
+    /** Time of the last location sample (epoch-ms, local time). */
+    val lastTimestampMillis: Long? = null,
 
     val userName: String = ""
 )

@@ -2,7 +2,7 @@
 
     <string name="main_settings_saved">Einstellungen gespeichert</string>
 
-    <string name="main_last_location_label">Letzte Position:</string>
+    <string name="main_last_location_label">Letzte Position (%1$s):</string>
     <string name="main_last_location_format">%1$.5f, %2$.5f</string>
 
     <string name="main_location_permission_required">
@@ -10,6 +10,8 @@
     </string>
 
     <string name="main_tracking_label">Tracking</string>
+    <string name="main_tracking_status_on">Tracking ist aktiviert. Zum Neustart bitte einmal aus- und wieder einschalten.</string>
+    <string name="main_tracking_status_off">Tracking ist deaktiviert.</string>
     <string name="main_interval_label">Intervall (Minuten)</string>
     <string name="main_server_url_label">Server-URL</string>
     <string name="main_user_name_label">Benutzername</string>

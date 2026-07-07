@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import pro.udeedit.demo.simplegpstracker.R
+import pro.udeedit.demo.simplegpstracker.core.data.mapper.toPayload
 import pro.udeedit.demo.simplegpstracker.core.data.network.LocationApi
 import pro.udeedit.demo.simplegpstracker.core.data.network.dto.LocationPayload
 import pro.udeedit.demo.simplegpstracker.core.domain.model.LocationPoint
@@ -89,24 +91,63 @@ class TrackingForegroundService : Service() {
     /**
      * Starts collecting location updates and sending them to the backend.
      *
-     * - Reads the current [TrackingConfig] to obtain `serverUrl`, `userId`
-     *   and optional `apiToken`.
-     * - Converts each [LocationPoint] to a [LocationPayload].
-     * - Uses [LocationApi] to POST the payload to the configured server URL.
+     * Behavior:
+     * - Reads the current [TrackingConfig] from [trackingConfigRepository] to obtain
+     *   the user-entered base `serverUrl`, `userId` and optional `apiToken`.
+     * - Builds the full endpoint URL by appending the fixed path `/api/v1/locations`
+     *   to the base URL (trimming any trailing slash).
+     * - Collects [LocationPoint] values from [observeLocationUseCase].
+     * - Converts each [LocationPoint] to a [LocationPayload] using `toPayload`.
+     * - Uses [locationApi] to POST the payload to the configured server endpoint
+     *   and logs the HTTP response status code.
      *
-     * If the `serverUrl` is blank, the function returns without starting
+     * If the base `serverUrl` is blank, the function returns without starting
      * collection, to avoid unnecessary work.
      */
     private fun startCollectingLocations() {
         if (locationCollectionJob?.isActive == true) return
 
         locationCollectionJob = serviceScope.launch {
+            // Read current config (user-entered base URL, userId, apiToken, etc.)
+            val config = trackingConfigRepository.getTrackingConfig()
+
+            // Base URL must be set by the user in settings
+            if (config.serverUrl.isBlank()) {
+                Log.w("TrackingService", "Server URL is blank; not starting location sending.")
+                return@launch
+            }
+
+            // Build full endpoint URL by appending the fixed API path
+            val fullUrl = config.serverUrl.trimEnd('/') + "/api/v1/locations"
+
+            Log.i("TrackingService", "Starting location collection; sending to $fullUrl")
+
             observeLocationUseCase().collectLatest { locationPoint ->
-                // TODO: send locationPoint to repository / server
-                // For now, this is a placeholder to show where tracking occurs.
+                val payload = locationPoint.toPayload(config)
+                try {
+                    val result = locationApi.sendLocation(
+                        serverUrl = fullUrl,
+                        apiToken = config.apiToken,
+                        payload = payload
+                    )
+
+                    val code = result.statusCode
+                    val body = result.body
+
+                    if (code in 200..299) {
+                        Log.d("TrackingService", "Sent location successfully (HTTP $code, body=$body): $payload")
+
+                    } else {
+                        Log.w("TrackingService", "Server responded with HTTP $code, body=$body for location: $payload")
+                    }
+
+                } catch (t: Throwable) {
+                    Log.e("TrackingService", "Failed to send location: $payload", t)
+                }
             }
         }
     }
+
 
     /**
      * Builds the notification shown while the service is running in the foreground.

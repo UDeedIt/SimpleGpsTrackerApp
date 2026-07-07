@@ -9,6 +9,8 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -52,11 +54,22 @@ class KtorLocationApi(
         serverUrl: String,
         apiToken: String?,
         payload: LocationPayload
-    ) {
-        client.post(serverUrl) {
+
+    ): LocationSendResult {
+
+        val response = client.post(serverUrl) {
             contentType(ContentType.Application.Json)
             apiToken?.let { header("Authorization", "Bearer $it") }
             setBody(payload)
-        }.body<Unit>()
+        }
+
+        val statusCode = response.status.value
+        val bodyText = runCatching { response.bodyAsText() }.getOrNull()
+
+        return LocationSendResult(
+            statusCode = statusCode,
+            body = bodyText
+        )
     }
+
 }

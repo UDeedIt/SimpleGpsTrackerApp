@@ -59,6 +59,9 @@ class MainViewModel @Inject constructor(
             observeTrackingConfig().collectLatest { config ->
                 lastDomainConfig = config
                 _uiState.value = config.toUiState()
+
+                // keep UI location observation in sync with the stored setting
+                updateLocationObservation(config.isTrackingEnabled)
             }
         }
     }
@@ -132,7 +135,8 @@ class MainViewModel @Inject constructor(
                 observeLocation().collectLatest { point ->
                     _uiState.value = _uiState.value.copy(
                         lastLatitude = point.latitude,
-                        lastLongitude = point.longitude
+                        lastLongitude = point.longitude,
+                        lastTimestampMillis = point.timestampMillis
                     )
                 }
             }
