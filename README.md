@@ -31,10 +31,10 @@ The project is structured as a small, realistic portfolio example of modern Andr
 <p align="center">
   <b>Modern MVI & Compose UI</b><br>
   <img src="./assets/im_1_main_screen.png" width="30%" alt="Main Screen" />
-  <img src="./assets/im_1_main_screen_dark.png" width="30%" alt="Main Screen, Dark" />
   <img src="./assets/im_2_permission_1.png" width="30%" alt="Allow Notifications Permission" />
   <img src="./assets/im_3_permission_2.png" width="30%" alt="Allow Location Permission" />
   <img src="./assets/im_4_main_screen.png" width="30%" alt="Main Screen at Work" />
+  <img src="./assets/im_1_main_screen_dark.png" width="30%" alt="Main Screen, Dark" />
   <img src="./assets/im_4_main_screen_dark.png" width="30%" alt="Main Screen at Work, Dark" />
 </p>
 
