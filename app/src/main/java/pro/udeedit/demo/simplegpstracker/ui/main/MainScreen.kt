@@ -74,19 +74,20 @@ fun MainScreen(
         padding = padding,
         onTrackingToggleChanged = { enabled ->
             if (enabled) {
+                // Request permission first; only turn tracking ON if granted.
                 requestLocationPermission { granted ->
-                    // Only enable tracking and start service if permission was granted.
                     if (granted) {
                         viewModel.onTrackingToggleChanged(true)
                         onStartTrackingRequested()
 
                     } else {
+                        // Keep switch OFF and ensure tracking is disabled.
                         viewModel.onTrackingToggleChanged(false)
                         onStopTrackingRequested()
                     }
                 }
-
             } else {
+                // User turned tracking OFF.
                 viewModel.onTrackingToggleChanged(false)
                 onStopTrackingRequested()
             }
