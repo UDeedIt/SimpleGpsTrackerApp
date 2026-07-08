@@ -2,6 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- required for location foreground services on modern Android -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ForegroundServicesPolicy" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+
     <application
         android:name=".SimpleGpsTrackerApp"
         android:allowBackup="true"
@@ -25,6 +35,11 @@
             </intent-filter>
 
         </activity>
+
+        <service
+            android:name=".tracking.TrackingForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
     </application>
 

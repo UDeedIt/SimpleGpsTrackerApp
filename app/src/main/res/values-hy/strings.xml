@@ -1,0 +1,37 @@
+<resources>
+
+    <string name="main_settings_saved">Կարգավորումները պահպանված են</string>
+
+    <string name="main_last_location_label">Վերջին գտնվելու վայրը (%1$s)՝</string>
+    <string name="main_last_location_format">%1$.5f, %2$.5f</string>
+
+    <string name="main_location_permission_required">
+        Հետեվելու համար անհրաժեշտ է տեղադրության թույլտվություն։
+    </string>
+
+    <string name="main_tracking_label">Հետեվում</string>
+    <string name="main_tracking_status_on">Հետևումը միացված է։ Վերագործարկելու համար անջատեք եվ նորից միացրեք։</string>
+    <string name="main_tracking_status_off">Հետևումը խափանված է։</string>
+
+    <string name="main_interval_label">Միջակայք (րոպե)</string>
+    <string name="main_server_url_label">Սերվերի URL</string>
+    <string name="main_user_name_label">Օգտվողի անուն</string>
+
+    <string name="main_save">Պահպանել</string>
+    <string name="main_saving">Պահպանվում է…</string>
+
+    <string name="tracking_notification_channel_name">Գործողության հետեւում</string>
+    <string name="tracking_notification_channel_description">
+        Ցույց է տալիս ծանուցում, երբ գտնվողության հետեւումը ակտիվ է:
+    </string>
+
+    <string name="tracking_notification_title">Գտնվելու վայրի հետեւումը ակտիվ է</string>
+    <string name="tracking_notification_text">
+        SimpleGpsTracker-ը հետեւում է ձեր գտնվելու վայրին:
+    </string>
+
+    <string name="main_location_permission_permanently_denied">
+        Գտնվելու վայրի թույլտվությունը մերժվել է մշտապես։ Խնդրում ենք միացնել այն հավելվածի կարգավորումներում։
+    </string>
+
+</resources>

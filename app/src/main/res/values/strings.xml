@@ -1,3 +1,38 @@
 <resources>
-    <string name="app_name">SimpleGpsTracker</string>
+    <string name="app_name" translatable="false">SimpleGpsTracker</string>
+
+    <!-- Main screen -->
+    <string name="main_title" translatable="false">SimpleGpsTracker</string>
+    <string name="main_settings_saved">Settings saved</string>
+
+    <string name="main_last_location_label">Last location (%1$s):</string>
+    <string name="main_last_location_format">%1$.5f, %2$.5f</string>
+
+    <!-- Shown when location permission is required / denied -->
+    <string name="main_location_permission_required">Location permission is required for tracking.</string>
+
+    <string name="main_tracking_label">Tracking</string>
+    <string name="main_tracking_status_on">Tracking is enabled. Toggle off and on to restart if needed.</string>
+    <string name="main_tracking_status_off">Tracking is disabled.</string>
+
+    <string name="main_interval_label">Interval (minutes)</string>
+    <string name="main_server_url_label">Server URL</string>
+    <string name="main_user_name_label">User name</string>
+
+    <string name="main_save">Save</string>
+    <string name="main_saving">Saving...</string>
+
+    <!-- Notification strings -->
+    <string name="tracking_notification_channel_id" translatable="false">tracking_channel</string>
+    <string name="tracking_notification_channel_name">Location tracking</string>
+    <string name="tracking_notification_channel_description">
+        Shows a notification while location tracking is active.
+    </string>
+    <string name="tracking_notification_title">Location tracking active</string>
+    <string name="tracking_notification_text">SimpleGpsTracker is tracking your location.</string>
+
+    <string name="main_location_permission_permanently_denied">
+        Location permission is permanently denied. Please enable it in app settings.
+    </string>
+
 </resources>

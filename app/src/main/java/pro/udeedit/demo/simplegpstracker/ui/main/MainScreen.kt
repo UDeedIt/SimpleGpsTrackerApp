@@ -1,0 +1,256 @@
+package pro.udeedit.demo.simplegpstracker.ui.main
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pro.udeedit.demo.simplegpstracker.MainActivity
+import pro.udeedit.demo.simplegpstracker.R
+
+/**
+ * Entry composable for the main screen.
+ *
+ * Responsibilities:
+ * - Obtain and observe [MainUiState] from [MainViewModel].
+ * - Delegate UI layout to [MainScreenContent].
+ * - Coordinate user actions (e.g. tracking toggle) with:
+ *   - Runtime permission requests,
+ *   - Foreground tracking service start/stop callbacks.
+ *
+ * @param padding Padding from the parent [Scaffold] in [MainActivity].
+ * @param requestLocationPermission Callback that requests location permission
+ * and reports the result via `onResult`.
+ * @param snackbarHostState [SnackbarHostState] used for transient messages.
+ * @param onStartTrackingRequested Called when tracking should be started
+ * (e.g. to start the foreground service).
+ * @param onStopTrackingRequested Called when tracking should be stopped
+ * (e.g. to stop the foreground service).
+ * @param viewModel Hilt-injected [MainViewModel] that owns the screen state.
+ */
+@Composable
+fun MainScreen(
+    padding: PaddingValues,
+    requestLocationPermission: (onResult: (Boolean) -> Unit) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    onStartTrackingRequested: () -> Unit,
+    onStopTrackingRequested: () -> Unit,
+    viewModel: MainViewModel = hiltViewModel()
+) {
+    // Collect the latest UI state from the ViewModel, respecting lifecycle.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Tracks whether we already auto-started tracking for this session,
+    // to avoid starting the service multiple times on recomposition.
+    var autoStartedTracking by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isTrackingEnabled) {
+        // If tracking is enabled in the saved config and we haven't auto-started yet,
+        // start the foreground tracking service once.
+        if (uiState.isTrackingEnabled && !autoStartedTracking) {
+            onStartTrackingRequested()
+            autoStartedTracking = true
+        }
+
+        // If user turns tracking off, reset the flag so it can auto-start again
+        // next time the setting is enabled from a cold start.
+        if (!uiState.isTrackingEnabled) {
+            autoStartedTracking = false
+        }
+    }
+
+    MainScreenContent(
+        state = uiState,
+        padding = padding,
+        onTrackingToggleChanged = { enabled ->
+            if (enabled) {
+                requestLocationPermission { granted ->
+                    // Only enable tracking and start service if permission was granted.
+                    if (granted) {
+                        viewModel.onTrackingToggleChanged(true)
+                        onStartTrackingRequested()
+
+                    } else {
+                        viewModel.onTrackingToggleChanged(false)
+                        onStopTrackingRequested()
+                    }
+                }
+
+            } else {
+                viewModel.onTrackingToggleChanged(false)
+                onStopTrackingRequested()
+            }
+        },
+        onUserNameChanged = viewModel::onUserNameChanged,
+        onIntervalChanged = viewModel::onIntervalChanged,
+        onServerUrlChanged = viewModel::onServerUrlChanged,
+        onSaveClicked = viewModel::onSaveClicked
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainScreenContent(
+    state: MainUiState,
+    padding: PaddingValues,
+    onTrackingToggleChanged: (Boolean) -> Unit,
+    onUserNameChanged: (String) -> Unit,
+    onIntervalChanged: (Int) -> Unit,
+    onServerUrlChanged: (String) -> Unit,
+    onSaveClicked: () -> Unit
+) {
+    /**
+     * Top-level scaffold for the main screen.
+     *
+     * - Hosts a top app bar with the title.
+     * - Provides `innerPadding` to content, which we combine with external `padding`
+     *   from the parent scaffold (in [MainActivity]) and our own fixed content padding.
+     */
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.main_title)) }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                // Padding from this Scaffold (e.g. for the top app bar)
+                .padding(innerPadding)
+                // Additional padding passed down from the parent Scaffold
+                .padding(padding)
+                // Fixed content padding for this screen
+                .padding(dimensionResource(R.dimen.main_screen_padding))
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.main_screen_item_spacing))
+        ) {
+
+            /**
+             * Tracking toggle row:
+             * - Label describing the setting.
+             * - [Switch] bound to `state.isTrackingEnabled`.
+             */
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.main_screen_row_spacing))
+            ) {
+                Text(stringResource(R.string.main_tracking_label))
+                Switch(
+                    checked = state.isTrackingEnabled,
+                    onCheckedChange = onTrackingToggleChanged
+                )
+            }
+
+            // Tracking status text shown under the switch to clarify current setting.
+            Text(
+                text = if (state.isTrackingEnabled) {
+                    stringResource(R.string.main_tracking_status_on)
+                } else {
+                    stringResource(R.string.main_tracking_status_off)
+                },
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            // User name
+            OutlinedTextField(
+                value = state.userName,
+                onValueChange = onUserNameChanged,
+                label = { Text(stringResource(R.string.main_user_name_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+
+            /**
+             * Interval input:
+             * - Backed by `state.intervalMinutes`.
+             * - Parses user input to Int; invalid values are ignored.
+             */
+            OutlinedTextField(
+                value = state.intervalMinutes.toString(),
+                onValueChange = { text ->
+                    text.toIntOrNull()?.let { onIntervalChanged(it) }
+                },
+                label = { Text(stringResource(R.string.main_interval_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            /**
+             * Server URL input:
+             * - Backed by `state.serverUrl`.
+             * - Used to configure the endpoint for sending location data.
+             */
+            OutlinedTextField(
+                value = state.serverUrl,
+                onValueChange = onServerUrlChanged,
+                label = { Text(stringResource(R.string.main_server_url_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            /**
+             * Save button:
+             * - Disabled while `state.isSaving` is true.
+             * - Triggers [onSaveClicked] to persist the configuration.
+             * - Shows "Saving..." vs "Save" based on `state.isSaving`.
+             */
+            Button(
+                onClick = onSaveClicked,
+                enabled = !state.isSaving,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(
+                    text = if (state.isSaving) {
+                        stringResource(R.string.main_saving)
+                    } else {
+                        stringResource(R.string.main_save)
+                    }
+                )
+            }
+
+            /**
+             * Last known location display:
+             * - Shown only when both latitude and longitude are available.
+             * - Uses localized label and formatted coordinates.
+             */
+            if (state.lastLatitude != null && state.lastLongitude != null) {
+                Column {
+                    val timeText = state.lastTimestampMillis?.let { formatTimestamp(it) } ?: "—"
+                    Text(text = stringResource(R.string.main_last_location_label, timeText))
+//                    Text(text = stringResource(R.string.main_last_location_label))
+                    Text(
+                        text = stringResource(
+                            R.string.main_last_location_format,
+                            state.lastLatitude,
+                            state.lastLongitude
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Formats an epoch-millis timestamp to “yyyy-MM-dd HH:mm:ss” in the
+ * device’s default locale/time-zone.
+ */
+@Composable
+private fun formatTimestamp(millis: Long): String {
+    val formatter = remember {
+        java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+    }
+    return formatter.format(java.util.Date(millis))
+}
