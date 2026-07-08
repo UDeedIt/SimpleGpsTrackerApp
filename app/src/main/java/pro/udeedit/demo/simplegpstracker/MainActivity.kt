@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -45,6 +46,10 @@ import pro.udeedit.demo.simplegpstracker.ui.theme.SimpleGpsTrackerTheme
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        const val TAG = "SGT MainActivity"
+    }
 
     /**
      * Called when the activity is starting.
@@ -153,7 +158,14 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         snackbarHostState = snackbarHostState,
-                        onStartTrackingRequested = { startTrackingService() },
+                        onStartTrackingRequested = {
+                            if (hasLocationPermission()) {
+                                startTrackingService()
+
+                            } else {
+                                Log.w(TAG, "Tried to start tracking without location permission; ignoring.")
+                            }
+                        },
                         onStopTrackingRequested = { stopTrackingService() }
                     )
                 }
@@ -172,6 +184,23 @@ class MainActivity : ComponentActivity() {
         )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
+    }
+
+    /**
+     * Returns true if either fine or coarse location permission is granted.
+     */
+    private fun hasLocationPermission(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarse = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        return fine || coarse
     }
 }
 
